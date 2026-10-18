@@ -56,6 +56,8 @@ R={"S_driver":round(float(S_driver),2),"S_fault":round(float(S_fault),2),"LR_fus
 # whose Hoeffding UPPER confidence bound on selective error is <= alpha, so P(test error <= alpha) >= 1-delta.
 vehs=np.unique(g); rng.shuffle(vehs); cut=len(vehs)//2
 cal=np.isin(g,vehs[:cut]); te=~cal; delta=0.1
+assert not set(g[cal])&set(g[te]), 'vehicle leakage between calibration and test'
+assert not set(np.r_[np.arange(n),np.arange(n)][cal])&set(np.r_[np.arange(n),np.arange(n)][te]), 'paired base-trip leakage'
 def tau_for(alpha):
     c=conf[cal]; e=(pred[cal]!=y[cal]).astype(int); order=np.argsort(-c)
     es=np.cumsum(e[order]); ns=np.arange(1,len(c)+1); ehat=es/ns

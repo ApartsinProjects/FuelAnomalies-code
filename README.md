@@ -52,3 +52,7 @@ Run from the repository root, for example `python scripts/p1_features.py`.
 `diagnostics/` holds the diagnostic analyses cited in the text (fast-trim behaviour, baseline mechanism check).
 
 Each script states its pre-registered checks in its header and writes them, with pass or fail, into its JSON output.
+
+## Regenerating everything
+
+`bash run_all.sh` runs every analysis script in dependency order (logs in `data/processed/rerun_logs/`) and rebuilds the LaTeX versions. `CLAIM_AUDIT.md` maps each headline number in the paper to its dataset, unit, evidence level and output file.
