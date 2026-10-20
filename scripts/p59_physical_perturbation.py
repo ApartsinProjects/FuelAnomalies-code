@@ -39,19 +39,19 @@ def perturb(r, gamma):
     s2 = np.clip(tr_ + (1 + gamma) * (s - tr_), 0, None)
     if LIMITED: s2 = limit_acc(s2)
     r2 = r.copy(); r2["speed"] = s2
-    a0 = np.abs(np.gradient(s / 3.6)); a1 = np.abs(np.gradient(s2 / 3.6))
-    invalid = bool(np.nanmax(a1) > 4.0 and not np.nanmax(a0) > 4.0)
+    a0 = np.abs(np.diff(s / 3.6)); a1 = np.abs(np.diff(s2 / 3.6))     # one-second steps, as the cap is defined
+    invalid = bool(np.nanmax(a1) > AMAX + 1e-6 and not np.nanmax(a0) > AMAX + 1e-6)
     return r2, invalid
 base = {}
 for i, r in trips:
-    F = trip_features(r)
+    F = dict(zip(VF, g["kin"](r["speed"].to_numpy())))   # source-definition signature features (p63)
     if F is not None: base[i] = score(F)
 ids = sorted(base); ksd = kraw.std()
 def shifts(gamma, sub):
     out, inv = [], []
     for i, r in sub:
         if i not in base: continue
-        r2, bad = perturb(r, gamma); F = trip_features(r2)
+        r2, bad = perturb(r, gamma); F = dict(zip(VF, g["kin"](r2["speed"].to_numpy())))
         if F is None: continue
         out.append((i, (score(F) - base[i]) / ksd)); inv.append(bad)
     return out, inv

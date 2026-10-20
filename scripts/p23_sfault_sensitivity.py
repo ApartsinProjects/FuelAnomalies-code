@@ -42,12 +42,13 @@ sc=Uz@Wk; S_driver=abs(sc[uy==1].mean()-sc[uy==0].mean())/np.sqrt((sc[uy==1].var
 
 # ---------- VED trip subset (as p17) ----------
 v=pd.read_parquet(os.path.join(ROOT,"data","processed","trip_features.parquet"))
+v = v.drop(columns=["speed_std", "accel_p95", "harsh_accel_per_km", "jerk_rms"]).merge(pd.read_parquet(os.path.join(ROOT,"data","processed","signature_features.parquet")), on=["VehId", "Trip"], how="left")   # signature features with the source (UAH) definition, p63
 lo,hi=v["fuel_per_100km"].quantile([.01,.99]); v=v[(v.fuel_per_100km>=lo)&(v.fuel_per_100km<=hi)].copy()
 VF=["speed_std","accel_p95","harsh_accel_per_km","jerk_rms"]
 v=v[v["ltft1_cov"]>=0.2].dropna(subset=["ltft1_mean"]+VF).copy()
 cnt=v.groupby("VehId")["ltft1_mean"].transform("size"); v=v[cnt>=15].copy(); v=v.reset_index(drop=True)
 gg=v.groupby("VehId"); n=len(v); sv=StandardScaler().fit(v[VF]); Zv=sv.transform(v[VF]); kraw=Zv@Wk
-cz0=((v["ltft1_mean"]-gg["ltft1_mean"].transform("mean"))/(gg["ltft1_mean"].transform("std")+1e-9)).to_numpy()
+cz0=((v["ltft1_mean"]-gg["ltft1_mean"].transform("mean"))/(gg["ltft1_mean"].transform("std")+1e-9)).to_numpy(); cz0 = cz0 / cz0.std()   # exact unit pooled variance (fault shift = S_fault exactly)
 S_fault_current=3.49/v.groupby("VehId")["ltft1_mean"].std().median()  # LiU-ICE smallest measured fueling deviation, pp (p37)
 ksd=kraw.std(); PERT=(S_driver*ksd/(Wk@dirn))*dirn
 

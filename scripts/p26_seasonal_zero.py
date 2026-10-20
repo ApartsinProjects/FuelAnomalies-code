@@ -57,6 +57,7 @@ sc = Uz @ Wk; S_driver = abs(sc[uy == 1].mean() - sc[uy == 0].mean()) / np.sqrt(
 
 # ---------- VED trips (identical filter) ----------
 v = pd.read_parquet(os.path.join(OUT, "trip_features.parquet"))
+v = v.drop(columns=["speed_std", "accel_p95", "harsh_accel_per_km", "jerk_rms"]).merge(pd.read_parquet(os.path.join(OUT, "signature_features.parquet")), on=["VehId", "Trip"], how="left")   # signature features with the source (UAH) definition, p63
 lo, hi = v["fuel_per_100km"].quantile([.01, .99]); v = v[(v.fuel_per_100km >= lo) & (v.fuel_per_100km <= hi)].copy()
 VF = ["speed_std", "accel_p95", "harsh_accel_per_km", "jerk_rms"]
 v = v[v["ltft1_cov"] >= 0.2].dropna(subset=["ltft1_mean"] + VF).copy()

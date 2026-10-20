@@ -41,6 +41,8 @@ Wk = LogisticRegression(max_iter=1000).fit(Uz, uy).coef_[0]
 sc = Uz @ Wk; S_driver = abs(sc[uy == 1].mean() - sc[uy == 0].mean()) / np.sqrt((sc[uy == 1].var() + sc[uy == 0].var()) / 2)
 
 tf = pd.read_parquet(os.path.join(OUT, "trip_features.parquet"))
+
+tf = tf.drop(columns=["speed_std", "accel_p95", "harsh_accel_per_km", "jerk_rms"]).merge(pd.read_parquet(os.path.join(OUT, "signature_features.parquet")), on=["VehId", "Trip"], how="left")   # signature features with the source (UAH) definition, p63
 tf = tf[(tf.ltft1_cov >= 0.2) & tf.ltft1_mean.notna()]
 tf = tf[tf.groupby("VehId").ltft1_mean.transform("size") >= 15]
 vstat = tf.groupby("VehId").ltft1_mean.agg(["mean", "std"])

@@ -28,6 +28,8 @@ CTX = ["oat_mean", "ac_w_mean", "heat_w_mean", "dist_km", "dur_min", "weight_lb"
 VF = ["speed_std", "accel_p95", "harsh_accel_per_km", "jerk_rms"]
 
 v = pd.read_parquet(os.path.join(OUT, "trip_features.parquet"))
+
+v = v.merge(pd.read_parquet(os.path.join(OUT, "signature_features.parquet")).rename(columns=lambda c: c if c in ("VehId", "Trip") else "sig_" + c), on=["VehId", "Trip"], how="left")   # source-definition signature features (p63), used only for the driver shift
 lo, hi = v["fuel_per_100km"].quantile([.01, .99]); v = v[(v.fuel_per_100km >= lo) & (v.fuel_per_100km <= hi)].copy()
 v = v[v["ltft1_cov"] >= 0.2].dropna(subset=["ltft1_mean"] + VF).copy()
 v = v[v.groupby("VehId")["ltft1_mean"].transform("size") >= 15].reset_index(drop=True)
@@ -80,11 +82,13 @@ for tgt in ["fuel_eq1", "fuel_eq2"]:
     res["trim_dominant_excess"] = float(ex[(zc > cp75) & (zk < kp50)].mean())
     res["corr_excess_kin"] = float(np.corrcoef(zk, ex)[0, 1]); res["corr_excess_trim"] = float(np.corrcoef(zc, ex)[0, 1])
     # p20 driver-injection fuel cost
-    M = hgb().fit(v[BEHAV + ENV].to_numpy(), y)
-    sv = StandardScaler().fit(v[VF]); kraw = sv.transform(v[VF]) @ Wk
+    vs = v.copy()
+    for c in VF: vs[c] = v["sig_" + c]                # the driver shift lives in the signature's feature space
+    M = hgb().fit(vs[BEHAV + ENV].to_numpy(), y)
+    sv = StandardScaler().fit(vs[VF]); kraw = sv.transform(vs[VF]) @ Wk
     raw_delta = ((S_driver * kraw.std() / (Wk @ dirn)) * dirn) * sv.scale_
-    base = M.predict(v[BEHAV + ENV].to_numpy()); vp = v[BEHAV + ENV].copy()
-    for i, c in enumerate(VF): vp[c] = np.clip(v[c].to_numpy() + raw_delta[i], v[c].quantile(.001), v[c].quantile(.999))
+    base = M.predict(vs[BEHAV + ENV].to_numpy()); vp = vs[BEHAV + ENV].copy()
+    for i, c in enumerate(VF): vp[c] = np.clip(vs[c].to_numpy() + raw_delta[i], vs[c].quantile(.001), vs[c].quantile(.999))
     res["driver_fuel_cost_pct_median"] = float(np.median((M.predict(vp.to_numpy()) - base) / base * 100))
     R[tgt] = {k: round(float(x), 4) for k, x in res.items()}
     print(tgt, R[tgt], flush=True)

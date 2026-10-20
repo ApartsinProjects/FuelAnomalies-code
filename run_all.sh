@@ -8,6 +8,7 @@ run() { echo "== $1"; OMP_NUM_THREADS=${OMP_NUM_THREADS:-4} $PY -P "scripts/$1.p
 mkdir -p data/processed/rerun_logs
 [[ "${1:-}" == "--skip-features" ]] || run p1_features                      # VED trip features (slow)
 # fleet model, decomposition, behaviour validation
+run p63_signature_features   # signature features with the source definition (needs raw VED)
 for s in p62_panel_flow p2_gonogo p3_decomposition p4_behaviour_validation p4_permtest p15_uah_e6 p9_ved_stats p10_consolidated; do run $s; done
 # signature contrast and robustness
 for s in p6_attribution p25_eq2_reconcile p40_fuelcut_bias p48_signature_contrast_real p54_kinematic_link_checks; do run $s; done

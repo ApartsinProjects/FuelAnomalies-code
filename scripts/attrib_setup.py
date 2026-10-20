@@ -27,6 +27,8 @@ Uu = np.array(ur); uy = np.array(uy); su = StandardScaler().fit(Uu); Uz = su.tra
 Wk = LogisticRegression(max_iter=1000).fit(Uz, uy).coef_[0]; dirn = Uz[uy == 1].mean(0) - Uz[uy == 0].mean(0)
 
 v = pd.read_parquet(os.path.join(ROOT, "data", "processed", "trip_features.parquet"))
+
+v = v.drop(columns=["speed_std", "accel_p95", "harsh_accel_per_km", "jerk_rms"]).merge(pd.read_parquet(os.path.join(ROOT, "data", "processed", "signature_features.parquet")), on=["VehId", "Trip"], how="left")   # signature features with the source (UAH) definition, p63
 lo, hi = v["fuel_per_100km"].quantile([.01, .99]); v = v[(v.fuel_per_100km >= lo) & (v.fuel_per_100km <= hi)].copy()
 VF = ["speed_std", "accel_p95", "harsh_accel_per_km", "jerk_rms"]
 ENV = ["oat_mean", "ac_w_mean", "heat_w_mean", "dist_km", "dur_min", "weight_lb", "speed_mean", "pct_hwy"]
@@ -35,7 +37,7 @@ v["excess"] = v.fuel_per_100km - cross_val_predict(HistGradientBoostingRegressor
 v = v[v["ltft1_cov"] >= 0.2].dropna(subset=["ltft1_mean"] + VF).copy()
 cnt = v.groupby("VehId")["ltft1_mean"].transform("size"); v = v[cnt >= 15].copy()
 sv = StandardScaler().fit(v[VF]); Zv = sv.transform(v[VF]); kraw = Zv @ Wk; n = len(v); grp = v.VehId.to_numpy()
-cz0 = ((v["ltft1_mean"] - v.groupby("VehId")["ltft1_mean"].transform("mean")) / (v.groupby("VehId")["ltft1_mean"].transform("std") + 1e-9)).to_numpy()
+cz0 = ((v["ltft1_mean"] - v.groupby("VehId")["ltft1_mean"].transform("mean")) / (v.groupby("VehId")["ltft1_mean"].transform("std") + 1e-9)).to_numpy(); cz0 = cz0 / cz0.std()   # exact unit pooled variance (fault shift = S_fault exactly)
 S_fault = 3.49 / v.groupby("VehId")["ltft1_mean"].std().median(); ksd = kraw.std()  # LiU-ICE smallest measured fueling deviation, pp (p37)
 z = lambda x, ref: (x - ref.mean()) / ref.std()
 kzn = z(kraw, kraw)

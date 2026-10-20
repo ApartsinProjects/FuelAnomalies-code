@@ -47,6 +47,7 @@ R["S_driver_cohen_d"]=round(float(S_driver),2); R["driver_weights"]=[round(float
 
 # ---------- VED trim subset ----------
 v=pd.read_parquet(os.path.join(ROOT,"data","processed","trip_features.parquet"))
+v = v.drop(columns=["speed_std", "accel_p95", "harsh_accel_per_km", "jerk_rms"]).merge(pd.read_parquet(os.path.join(ROOT,"data","processed","signature_features.parquet")), on=["VehId", "Trip"], how="left")   # signature features with the source (UAH) definition, p63
 lo,hi=v["fuel_per_100km"].quantile([.01,.99]); v=v[(v.fuel_per_100km>=lo)&(v.fuel_per_100km<=hi)].copy()
 VFEAT=["speed_std","accel_p95","harsh_accel_per_km","jerk_rms"]   # same order as FEAT
 v=v[v["ltft1_cov"]>=0.2].dropna(subset=["ltft1_mean"]+VFEAT).copy()
@@ -55,7 +56,7 @@ sv=StandardScaler().fit(v[VFEAT]); Zv=sv.transform(v[VFEAT])
 ltft_sd=v.groupby("VehId")["ltft1_mean"].std().median(); S_fault=3.49/ltft_sd  # LiU-ICE smallest measured fueling deviation, pp (p37)
 R["S_fault_bench"]=round(float(S_fault),2); R["ltft_within_sd"]=round(float(ltft_sd),2)
 gg=v.groupby("VehId"); grp=v["VehId"].to_numpy(); n=len(v)
-cz0=((v["ltft1_mean"]-gg["ltft1_mean"].transform("mean"))/(gg["ltft1_mean"].transform("std")+1e-9)).to_numpy()
+cz0=((v["ltft1_mean"]-gg["ltft1_mean"].transform("mean"))/(gg["ltft1_mean"].transform("std")+1e-9)).to_numpy(); cz0 = cz0 / cz0.std()   # exact unit pooled variance (fault shift = S_fault exactly)
 
 # FIXED driver perturbation vector, calibrated ONCE with the TRUE weights to shift the true
 # score by S_driver SDs. The SAME feature perturbation is then scored by any weight vector, so a

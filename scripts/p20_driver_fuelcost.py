@@ -31,6 +31,7 @@ sc=su.transform(Uu)@Wk; S_driver=abs(sc[uy==1].mean()-sc[uy==0].mean())/np.sqrt(
 
 # VED: fit expected-fuel model M on behav+env; build the P17 driver perturbation
 v=pd.read_parquet(os.path.join(ROOT,"data","processed","trip_features.parquet"))
+v = v.drop(columns=["speed_std", "accel_p95", "harsh_accel_per_km", "jerk_rms"]).merge(pd.read_parquet(os.path.join(ROOT,"data","processed","signature_features.parquet")), on=["VehId", "Trip"], how="left")   # signature features with the source (UAH) definition, p63
 lo,hi=v["fuel_per_100km"].quantile([.01,.99]); v=v[(v.fuel_per_100km>=lo)&(v.fuel_per_100km<=hi)].copy()
 VF=["speed_std","accel_p95","harsh_accel_per_km","jerk_rms"]
 v=v[v["ltft1_cov"]>=0.2].dropna(subset=["ltft1_mean"]+VF).copy(); cnt=v.groupby("VehId")["ltft1_mean"].transform("size"); v=v[cnt>=15].copy()

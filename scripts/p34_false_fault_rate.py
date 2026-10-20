@@ -23,7 +23,7 @@ v = g["v"]; VF = g["VF"]; sv = g["sv"]
 # VED fleet trip-score reference: same frozen score on VED trip features (as the deployed axis)
 ved_scores = sv.transform(v[VF]) @ Wk
 _t = json.load(open(os.path.join(ROOT, "data", "processed", "p26_seasonal_zero.json")))["item2"]
-S_F, SD_PRIOR = 3.49 / 1.79, 1.79   # LiU-ICE anchor (p37) over the fleet median within-vehicle LTFT SD
+S_F, SD_PRIOR = 3.49 / 1.796, 1.796   # LiU-ICE anchor (p37) over the fleet median within-vehicle LTFT SD
 TAU = {0.05: _t["alpha_0.05"]["tau"], 0.10: _t["alpha_0.1"]["tau"]}
 score_src = lambda spd: float((su.transform(np.array([kin(spd)])) @ Wk)[0])
 

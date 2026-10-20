@@ -36,13 +36,16 @@ H = {}
 for kind, grid in (("ROLL", np.linspace(1.0, 4.0, 121)), ("EWMA", np.linspace(0.3, 3.0, 109)), ("CUSUM", np.linspace(0.5, 12.0, 116))):
     rates = np.array([rate(kind, h, cal_i) for h in grid]); H[kind] = float(grid[np.argmin(np.abs(rates - 0.02))])
     R[kind] = {"h": round(H[kind], 3), "false_alarms_per_100_trips_heldout": round(100 * rate(kind, H[kind], te_i), 2)}
+REPS = 50                                             # onsets per held-out vehicle, shared by all detectors (paired)
+T0 = {(i, r): int(rng.integers(25, len(seqs[i]) - 10)) for i in te_i for r in range(REPS)}
+R["onsets_per_vehicle"] = REPS
 for s in (3.49, 6.0, 8.0):
     for kind in ("ROLL", "EWMA", "CUSUM"):
         delays = []
         for i in te_i:
             L = seqs[i]
-            for _ in range(5):
-                t0 = int(rng.integers(25, len(L) - 10)); Ls = L.copy(); Ls[t0:] += s
+            for r in range(REPS):
+                t0 = T0[(i, r)]; Ls = L.copy(); Ls[t0:] += s
                 al = run(zseq(Ls), kind, H[kind]); hit = np.flatnonzero(al[t0:])
                 delays.append(hit[0] + 1 if len(hit) else np.inf)
         d = np.array(delays)
