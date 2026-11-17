@@ -2,7 +2,7 @@
 (A) The published threshold uses a binomial bound over variants with a Bonferroni correction over 100 margins; variants
     cluster by vehicle. Here the unit is the vehicle. For a margin threshold tau, each calibration vehicle v gives
     Z_v(tau) = (errors_v - alpha * decisions_v) / variants_v, bounded in [-alpha, 1 - alpha]; selective error <= alpha
-    (ratio of vehicle-level expectations) is E[Z] <= 0. Thresholds are tested in a FIXED SEQUENCE from a pre-set start (25% coverage)
+    (ratio of vehicle-level expectations) is E[Z] <= 0. Thresholds are tested in a FIXED SEQUENCE from a pre-set start (25% coverage in part A; 25% and 50% in part C, see p67 for sensitivity)
     down in margin (no multiplicity correction needed); the last threshold before the first non-rejection is kept. Two tests of
     H0: E[Z] > 0 at level delta = 0.1 on the calibration vehicles: a finite-sample betting test (Waudby-Smith and Ramdas,
     as used in Learn then Test) and a one-sided t-test on vehicle means (asymptotic, cluster-robust). Reported on one
