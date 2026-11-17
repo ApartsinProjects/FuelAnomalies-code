@@ -8,7 +8,7 @@ Regenerate everything with `bash run_all.sh`; each script writes the named JSON 
 |---|---|---|---|---|---|
 | Data flow (Sec. 3.1, Table 2) | 14,460/197 -> 14,170/194 -> 11,614/186 -> 11,304/136 | VED | trip, vehicle | D | `p62_panel_flow.py` -> `p62_panel_flow.json` |
 | Expected-fuel model R^2 (Sec. 6.1) | 0.673 [0.628, 0.709]; MAPE 13.3% | VED 14,170 trips / 194 vehicles | trip, vehicle-grouped folds | D | `p9_ved_stats.py`, `p10_consolidated.py` |
-| Predictive variance shares (Sec. 6.2, Table 16) | behaviour 0.080, vehicle-baseline 0.143 | VED 14,170 trips / 194 vehicles | trip; vehicle bootstrap | D (predictive, not causal) | `p10_consolidated.py` (one pass; p3 uses another depth); cross-fitted 0.136-0.138 `p11_eaai_ved.json` |
+| Predictive variance shares (Sec. 6.2, Table 4) | behaviour 0.080, vehicle-baseline 0.143 | VED 14,170 trips / 194 vehicles | trip; vehicle bootstrap | D (predictive, not causal) | `p10_consolidated.py` (one pass; p3 uses another depth); cross-fitted 0.136-0.138 `p11_eaai_ved.json` |
 | Driving Events AUC (Sec. 6.3) | 0.958 [0.927, 0.981] | Driving Events, 3 drivers | event; event bootstrap | D | `p4_behaviour_validation.py` |
 | UAH richer features AUC (Sec. 6.3) | 0.829 | UAH-DriveSet, 6 drivers | 30 s window, LODO | D | `p15_uah_e6.py` |
 | Deployed speed signature AUC (Abstract, Sec. 6.3) | 0.694; per driver 0.51-0.77 | UAH-DriveSet, 6 drivers | 30 s window, LODO | D | `p61_history_and_drivers.py` -> `p61_history_and_drivers.json` |
@@ -28,16 +28,17 @@ Regenerate everything with `bash run_all.sh`; each script writes the named JSON 
 | Physical perturbation (Sec. 8.3) | 0.856 vs feature-level 0.860; invalid 0% capped (17% uncapped, one-second steps) | VED first 3 weeks, 764 trips | trip, window operating point | S | `p59_physical_perturbation.py` |
 | Four-condition factorial (Sec. 8.3, Table 7) | false fault on driver-only 12.6% / 8.6%; false driver on fault-only 9.0% / 7.5%; none->none 52.3% / 63.1% | VED 11,304 per condition | window / trip | S | `p58_factorial_and_baselines.py` |
 | Simple rules, matched coverage (Sec. 8.4, Table 8) | fusion 0.844 / 0.874; trim-only 0.834 / 0.830; logistic 0.843 / 0.875 | VED, 68 held-out vehicles | window / trip | S | `p58_factorial_and_baselines.py` |
-| Label-free comparison methods (Table 14) | target-only 0.659 / 0.727; pooled 0.729-0.780 / 0.783-0.809; SHAP 0.507 / 0.550 | VED 11,304/136 | window / trip | S | `p33_attribution_baselines.py` |
-| Ablation (Table 15) | within-vehicle trim -16 / -11 points; equal weights 0.837 / 0.850 | VED 11,304/136 | window / trip | S | `p35_ablation_runtime.py` |
+| Label-free comparison methods (Table 16) | target-only 0.659 / 0.727; pooled 0.729-0.780 / 0.783-0.809; SHAP 0.507 / 0.550 | VED 11,304/136 | window / trip | S | `p33_attribution_baselines.py` |
+| Ablation (Table 17) | within-vehicle trim -16 / -11 points; equal weights 0.837 / 0.850 | VED 11,304/136 | window / trip | S | `p35_ablation_runtime.py` |
 | Risk-controlled abstention (Sec. 8.4, Table 9) | alpha 0.05: coverage 0.553 / 0.721, error 0.041 [0.036, 0.046] / 0.048 [0.043, 0.053] | VED, 68 cal + 68 disjoint test vehicles | variant; vehicle-disjoint split | S | `p58_factorial_and_baselines.py`; 200 splits `p53_risk_control_splits.py` |
-| Vehicle-level guarantee (Sec. 8.4, abstract) | alpha 0.10: coverage 0.69 window / 0.87 trip, median held-out error 6.7% / 7.6%, exceedance 0 of 200 splits; alpha 0.05 not certifiable | VED, 102 calibration + 34 test vehicles | vehicle | S | `p65_vehicle_level_control.py` (part C) |
+| Vehicle-level guarantee (Sec. 8.4, Table 10, abstract) | alpha 0.10: coverage 0.69 window / 0.87 trip, median held-out error 6.7% / 7.6%, exceedance 0 of 200 splits; alpha 0.05 not certifiable | VED, 102 calibration + 34 test vehicles | vehicle | S | `p65_vehicle_level_control.py` (part C) |
 | Vehicle-referenced kinematic score (Sec. 4.6, 8.5) | within-driver source effect 0.69 [0.43, 0.94]; fusion 0.847 / 0.882; Kia trips 14 none / 4 driver / 1 fault / 1 abstain, Sonata 21 / 6 / 0 / 1 | UAH 6 drivers; VED 11,304/136; Kia 20 trips; Sonata 28 | window / trip | D (UAH, fixed cars), S (fleet) | `p66_uah_within_driver.py`, `p65_vehicle_level_control.py` (part B) |
 | Vehicle-level guarantee, robustness (Sec. 8.4) | starts 40-60% and a fixed margin grid: identical; delta 0.025: trip 77% coverage, 5.3% error, window not certified | VED, 102 + 34 vehicles | vehicle | S | `p67_vehicle_guarantee_robustness.py` |
+| Outputs without an injected cause (Sec. 8.5, Table 11) | VED unchanged trips, alpha 0.05: fault 3.8% (window operating point), 9.8% (trip operating point); Kia 5/704 windows, Sonata 0/665 | 68 held-out VED vehicles; Kia; Sonata | trip / one-minute window | D | `p68_fleet_outputs_and_roc.py`, `p34_false_fault_rate.py`, `p65_vehicle_level_control.py` |
 | Fuel magnitude alone (Sec. 8.3) | 0.523; three-channel 0.847 | VED 11,304/136 | window | S | `p22_magnitude_fusion.py` |
 | S_fault sweep (Sec. 8.4) | argmax 0.66-0.84 over 0.5-3.5 | VED | window | S | `p23_sfault_sensitivity.py` |
-| Rolling reference (Sec. 8.6, App. E, Table 11) | false alarms 0.093 (93.3 per 1,000 trips, 657 per 1,000 h); first-trip detection 0.62 at 3.49 pp | VED 8,610/124, season held out | trip | D (detection on added steps: S) | `p49_rolling_onset.py`, `p61_history_and_drivers.py` |
-| Change detectors (App. F, Table 12) | first trip 0.44 vs EWMA 0.24, CUSUM 0.21 at ~1.9 alarms per 100 trips (onsets shared, 50 per vehicle) | VED 89 vehicles | trip | S | `p55_change_detectors.py` |
+| Rolling reference (Sec. 8.6, App. E, Table 13) | false alarms 0.093 (93.3 per 1,000 trips, 657 per 1,000 h); first-trip detection 0.62 at 3.49 pp | VED 8,610/124, season held out | trip | D (detection on added steps: S) | `p49_rolling_onset.py`, `p61_history_and_drivers.py` |
+| Change detectors (App. F, Table 14) | first trip 0.44 vs EWMA 0.24, CUSUM 0.21 at ~1.9 alarms per 100 trips (onsets shared, 50 per vehicle) | VED 89 vehicles | trip | S | `p55_change_detectors.py` |
 | Runtime (Sec. 8.4) | 0.71 ms per 33-minute trip, 15 parameters | one CPU thread | trip | measured | `p35_ablation_runtime.py` |
 
 Signature features: the VED fleet's four signature features are recomputed with the source (UAH) definition by `p63_signature_features.py` -> `signature_features.parquet` and swapped in by every signature script.

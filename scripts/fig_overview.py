@@ -13,7 +13,7 @@ def arrow(x1,y1,x2,y2,c="#555"):
     ax.add_patch(FancyArrowPatch((x1,y1),(x2,y2),arrowstyle="-|>",mutation_scale=11,lw=1,color=c))
 box(1,38,27,11,"Driver source: UAH-DriveSet",["aggressive vs normal labels","speed-only signature, frozen"],RED,"#f3eded")
 box(1,25,27,11,"Fault benches",["LiU-ICE: measured fueling faults","EngineFaultDB: emission signature"],BLUE,"#eef2f6")
-box(1,12,27,11,"Target fleet: VED",["197 cars, 14,460 trips","fuel from air flow, no cause labels"],GRAY,"#f4f4f4")
+box(1,12,27,11,"Target fleet: VED",["136 cars, 11,304 trips","fuel from air flow, no cause labels"],GRAY,"#f4f4f4")
 box(1,-1,27,11,"Replications",["Kia, Sonata (fixed cars)","Opel fill-ups, Driving Events"],GREEN,"#eef5ee")
 box(38,30,26,12,"Kinematic axis",["acceleration, jerk,","harsh events (1 Hz speed)"],RED,"#fff")
 box(38,10,26,12,"Fuel-trim axis",["within-vehicle long-term trim","(bench: air-fuel ratio, CO, HC)"],BLUE,"#fff")

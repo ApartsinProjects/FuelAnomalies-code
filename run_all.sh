@@ -20,7 +20,7 @@ $PY -P diagnostics/p47_bench_conditions.py > data/processed/rerun_logs/p47.log 2
 # injected ground truth, comparisons, ablation, abstention, stress tests
 for s in p17_attribution_fixed p19_conformal p22_magnitude_fusion p23_sfault_sensitivity p24_operating_points p33_attribution_baselines \
          p35_ablation_runtime p39_trip_effect_size p50_deployment_faithful p52_misspecified_injection p53_risk_control_splits \
-         p57_real_shaped_injection p58_factorial_and_baselines p59_physical_perturbation p64_axis_r2_panel p65_vehicle_level_control p66_uah_within_driver p67_vehicle_guarantee_robustness; do run $s; done
+         p57_real_shaped_injection p58_factorial_and_baselines p59_physical_perturbation p64_axis_r2_panel p65_vehicle_level_control p66_uah_within_driver p67_vehicle_guarantee_robustness p68_fleet_outputs_and_roc; do run $s; done
 # rolling reference, change detectors, history length
 for s in p49_rolling_onset p55_change_detectors p61_history_and_drivers; do run $s; done
 # figures and paper builds
