@@ -31,6 +31,7 @@ Regenerate everything with `bash run_all.sh`; each script writes the named JSON 
 | Label-free comparison methods (Table 9) | target-only 0.659 / 0.727; pooled 0.729-0.780 / 0.783-0.809; SHAP 0.507 / 0.550 | VED 11,304/136 | window / trip | S | `p33_attribution_baselines.py` |
 | Ablation (Table 11) | within-vehicle trim -16 / -11 points; equal weights 0.837 / 0.850 | VED 11,304/136 | window / trip | S | `p35_ablation_runtime.py` |
 | Risk-controlled abstention (Sec. 8.4, Table 12) | alpha 0.05: coverage 0.553 / 0.721, error 0.041 [0.036, 0.046] / 0.048 [0.043, 0.053] | VED, 68 cal + 68 disjoint test vehicles | variant; vehicle-disjoint split | S | `p58_factorial_and_baselines.py`; 200 splits `p53_risk_control_splits.py` |
+| Within-vehicle kinematic score; vehicle-level test (Sec. 8.4, 8.5) | fusion 0.852 / 0.891 (vs 0.846 / 0.879); Kia trips 14 none / 4 driver / 1 fault / 1 abstain; vehicle-level test: no decisions with 68 vehicles | VED 11,304/136; Kia 20 trips; Sonata 28 | window / trip | S (fixed cars: D) | `p65_vehicle_level_control.py` |
 | Fuel magnitude alone (Sec. 8.3) | 0.523; three-channel 0.847 | VED 11,304/136 | window | S | `p22_magnitude_fusion.py` |
 | S_fault sweep (Sec. 8.4) | argmax 0.66-0.84 over 0.5-3.5 | VED | window | S | `p23_sfault_sensitivity.py` |
 | Rolling reference (Sec. 8.6, App. E, Table 14) | false alarms 0.093 (93.3 per 1,000 trips, 657 per 1,000 h); first-trip detection 0.62 at 3.49 pp | VED 8,610/124, season held out | trip | D (detection on added steps: S) | `p49_rolling_onset.py`, `p61_history_and_drivers.py` |
