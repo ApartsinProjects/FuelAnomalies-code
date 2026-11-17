@@ -2,8 +2,8 @@
 (A) The published threshold uses a binomial bound over variants with a Bonferroni correction over 100 margins; variants
     cluster by vehicle. Here the unit is the vehicle. For a margin threshold tau, each calibration vehicle v gives
     Z_v(tau) = (errors_v - alpha * decisions_v) / variants_v, bounded in [-alpha, 1 - alpha]; selective error <= alpha
-    (ratio of vehicle-level expectations) is E[Z] <= 0. Thresholds are tested in a FIXED SEQUENCE from the largest margin
-    down (no multiplicity correction needed); the last threshold before the first non-rejection is kept. Two tests of
+    (ratio of vehicle-level expectations) is E[Z] <= 0. Thresholds are tested in a FIXED SEQUENCE from a pre-set start (25% coverage)
+    down in margin (no multiplicity correction needed); the last threshold before the first non-rejection is kept. Two tests of
     H0: E[Z] > 0 at level delta = 0.1 on the calibration vehicles: a finite-sample betting test (Waudby-Smith and Ramdas,
     as used in Learn then Test) and a one-sided t-test on vehicle means (asymptotic, cluster-robust). Reported on one
     68/68 vehicle split (the split of p58) and over 200 random vehicle splits: coverage, selective error on held-out
@@ -28,10 +28,10 @@ def wsr_p(x, alpha, delta=DELTA):
     K = np.cumsum(np.log(1 - nu * (x - alpha))); return float(min(1.0, np.exp(-K.max())))
 def t_p(x, alpha):
     m = len(x); s = x.std(ddof=1); return 1.0 if s == 0 and x.mean() >= alpha else float(T.cdf((x.mean() - alpha) / (s / np.sqrt(m) + 1e-12), m - 1))
-def calibrate(conf, err, G, cal_veh, alpha, test, rng):
+def calibrate(conf, err, G, cal_veh, alpha, test, rng, start=0.25):
     vid = {u: i for i, u in enumerate(cal_veh)}; m = np.isin(G, cal_veh); idx = np.array([vid[u] for u in G[m]]); c, e = conf[m], err[m]
     nv = np.bincount(idx, minlength=len(cal_veh)).astype(float); order = rng.permutation(len(cal_veh))
-    grid = np.quantile(c, np.linspace(0.99, 0.0, 100)); keep = np.inf
+    grid = np.quantile(c, np.linspace(1 - start, 0.0, int(round((1 - start) * 100)) + 1)); keep = np.inf   # pre-set start at 25% coverage: at stricter margins almost nothing is decided and no test has power
     for tau in grid:                                  # fixed sequence: largest margin first
         d = c >= tau; ev = np.bincount(idx[d], weights=e[d], minlength=len(cal_veh)); dv = np.bincount(idx[d], minlength=len(cal_veh))
         y = (ev - alpha * dv) / nv + alpha            # in [0, 1]; H0: mean >= alpha
@@ -72,7 +72,9 @@ B = {"corr_excess_fleet_standardized": round(float(np.corrcoef(ex, kf0)[0, 1]), 
 for lvl, Sd in (("window", 0.65), ("trip", 1.3)):
     shift_raw = Sd * kraw.std()                        # the injected raw score shift (unchanged from the published injection)
     for name, k0_, kA_, Sd_eval in (("fleet_standardized", kf0, kf0 + Sd, Sd),
-                                   ("within_vehicle", kw0, kw0 + shift_raw / (vsd + 1e-9) / sc, shift_raw / med_sd / sc)):
+                                   ("within_vehicle", kw0, kw0 + shift_raw / (vsd + 1e-9) / sc, shift_raw / med_sd / sc),
+                                   # driver effect of Sd within-vehicle SDs, the construct measured within driver on UAH
+                                   ("within_vehicle_source_effect", kw0, kw0 + Sd / sc, Sd / sc)):
         KZ = np.r_[k0_, kA_, k0_, kA_]; CZ = np.r_[cz0, cz0, cz0 + SF, cz0 + SF]; y = np.repeat([0, 1, 2, 3], n)
         lA = N.logpdf(KZ, Sd_eval, 1) - N.logpdf(KZ, 0, 1); lB = N.logpdf(CZ, SF, 1) - N.logpdf(CZ, 0, 1)
         pub = np.where((lA < 0) & (lB < 0), 0, np.where(lB > lA, 2, 1)); two = (y == 1) | (y == 2)
@@ -106,4 +108,21 @@ for car, df in cars():
                          "car_referenced": {k: int((decide(kz_car, cz, 1.3, tau05) == k).sum()) for k in ("none", "driver", "fault", "abstain")}}
     print(car, B[f"{car}_trips"], flush=True)
 R["B_within_vehicle_kinematic"] = B
+# ---------------- (C) vehicle-level betting test with a larger calibration share and the within-vehicle score ----------------
+C = {}
+for lvl, Sd in (("window", 0.65), ("trip", 1.3)):
+    K2 = np.r_[kw0 + Sd / sc, kw0]; C2 = np.r_[cz0, cz0 + SF]; y2 = np.r_[np.zeros(n), np.ones(n)].astype(int); G2 = np.r_[grp, grp]
+    la = N.logpdf(K2, Sd / sc, 1) - N.logpdf(K2, 0, 1); lb = N.logpdf(C2, SF, 1) - N.logpdf(C2, 0, 1); conf = np.abs(la - lb); err = ((lb > la) != y2).astype(float)
+    for alpha in (0.05, 0.10):
+        for frac, start in ((0.5, 0.25), (0.75, 0.25), (0.5, 0.5), (0.75, 0.5)):
+            ex, cov, se = [], [], []
+            for s_ in range(200):
+                r = np.random.default_rng(500 + s_); vs = vehs0.copy(); r.shuffle(vs); k = int(len(vs) * frac); cal, te = vs[:k], vs[k:]
+                e_ = evaluate(conf, err, G2, te, calibrate(conf, err, G2, cal, alpha, "betting", r, start)); cov.append(e_["coverage"])
+                if e_["decisions"]: ex.append(e_["selective_error"] > alpha); se.append(e_["selective_error"])
+            C[f"{lvl}_alpha{alpha}_cal{int(frac * 136)}_start{start}"] = {"splits_with_decisions": len(ex), "exceed_rate": round(float(np.mean(ex)), 3) if ex else None,
+                "coverage_median": round(float(np.median(cov)), 3), "coverage_median_when_deciding": round(float(np.median([c for c in cov if c > 0])), 3) if ex else None,
+                "selective_error_median": round(float(np.median(se)), 4) if se else None}
+            print("C", lvl, alpha, frac, start, C[f"{lvl}_alpha{alpha}_cal{int(frac * 136)}_start{start}"], flush=True)
+R["C_betting_within_vehicle"] = C
 json.dump(R, open(os.path.join(ROOT, "data", "processed", "p65_vehicle_level_control.json"), "w"), indent=1); print("done")
