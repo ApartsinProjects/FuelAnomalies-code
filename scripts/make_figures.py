@@ -19,8 +19,10 @@ plt.rcParams.update({
     "font.size":11,"axes.edgecolor":"#888","axes.linewidth":0.8,
     "axes.titlesize":12.5,"axes.titleweight":"bold","figure.dpi":120,
     "svg.fonttype":"none","text.color":INK,"axes.labelcolor":INK,"xtick.color":INK,"ytick.color":INK})
+SUPERSEDED = {"signature_contrast", "fig5_fault_signature", "fig6_attribution_accuracy", "mixed_cause_grid"}
 def save(fig,name):
     fig.tight_layout()
+    if name in SUPERSEDED: plt.close(fig); return   # drawn by fig_reanchor.py / fig_attribution_corrected.py from current results
     fig.savefig(os.path.join(FIG,name+".svg"),bbox_inches="tight")
     fig.savefig(os.path.join(FIG,name+".png"),bbox_inches="tight",dpi=150)
     plt.close(fig); print("wrote",name)

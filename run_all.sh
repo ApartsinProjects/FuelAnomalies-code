@@ -24,6 +24,6 @@ for s in p17_attribution_fixed p19_conformal p22_magnitude_fusion p23_sfault_sen
 # rolling reference, change detectors, history length
 for s in p49_rolling_onset p55_change_detectors p61_history_and_drivers; do run $s; done
 # figures and paper builds
-for s in make_figures fig_attribution_corrected fig_reanchor fig_overview fig7; do run $s || true; done
+for s in make_figures fig_attribution_corrected fig_reanchor fig_overview fig7; do run $s; done
 for t in ijphm twocol arxiv; do $PY -P scripts/make_eaai_latex.py --$t; done
 echo "done; see data/processed/*.json and CLAIM_AUDIT.md for the claim-to-output map"
