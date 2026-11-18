@@ -1,4 +1,4 @@
-# Code for "Driver or Fueling Fault? Isolating the Cause of Fuel-Efficiency Anomalies from On-Board Diagnostic Signals Without Joint Cause Labels"
+# Code for "Driver or Fueling Fault? A Fuel-Trim Fault Screen with a Driving-Style Indicator for Vehicle Fleets Without Joint Cause Labels"
 
 This repository contains the analysis code behind every number, table and figure in the manuscript. All datasets are
 public and are downloaded from their original sources; none is redistributed here.
@@ -36,19 +36,23 @@ Run from the repository root, for example `python scripts/p1_features.py`.
 
 | Step | Scripts | Paper |
 |---|---|---|
-| Data audit and VED trip features | `p0_audit.py`, `p1_features.py` | Sections 3, 4.2 to 4.4 |
-| Expected-fuel model and variance decomposition | `p2_*.py`, `p3_decomposition.py`, `p9_ved_stats.py`, `p10_consolidated.py` | Section 6, Table 4 |
-| Behaviour-axis validation | `p4_*.py`, `p15_uah_e6.py` | Section 6.3 |
-| Engine-fault bench by operating condition | `p45_bench_ci.py`, `diagnostics/p47_bench_conditions.py` | Section 7.1, Table 5, Figure 5 |
-| Signature contrast and robustness | `p6_attribution.py`, `p7_baselines.py`, `p11_eaai_ved.py`, `p16_strengthen.py`, `p18_harden.py`, `p25_eq2_reconcile.py`, `p40_fuelcut_bias.py` | Sections 8.1, 8.2, 8.5 |
-| Injected ground truth, operating points, comparisons, ablation | `p8_*.py`, `p13`-`p14`, `p17_attribution_fixed.py`, `p19_conformal.py`, `p20`-`p24`, `p33_attribution_baselines.py`, `p35_ablation_runtime.py`, `p36_revision_checks.py`, `p39_trip_effect_size.py` | Sections 4.6, 8.3, 8.4, Tables 7 and 8 |
-| Fixed-car replications and false-fault rate | `p29_hcrl.py`, `p31_sonata.py`, `p32_trim_echo.py`, `p34_false_fault_rate.py` | Sections 4.5, 8.6 |
-| Measured fueling faults (fault magnitude) | `p30_liuice_leak.py`, `p37_liuice_maf_dose.py` | Section 7.2 |
-| Signature contrast on real vehicles | `p48_signature_contrast_real.py` | Section 8.1, Table 6, Figure 6 |
-| Seasonal drift, rolling reference, cold start, road car | `p26_seasonal_zero.py`, `p49_rolling_onset.py`, `p28_coldstart.py`, `p38_bank_divergence.py`, `p41_opel_panel.py` | Sections 8.7, 10, Table 9 |
+| Data audit, VED trip features, panel flow | `p0_audit.py`, `p1_features.py`, `p62_panel_flow.py`, `p63_signature_features.py` | Sections 3, 4.2 to 4.4, Table 2 |
+| Expected-fuel model and variance decomposition | `p2_*.py`, `p3_decomposition.py`, `p9_ved_stats.py`, `p10_consolidated.py` | Sections 6.1, 6.2, Table 4, Appendix L |
+| Kinematic-signature validation | `p4_*.py`, `p15_uah_e6.py`, `p66_uah_within_driver.py`, `p68_fleet_outputs_and_roc.py` | Section 6.3, Figure 2, Appendix A |
+| Measured fueling faults (fault magnitude) | `p30_liuice_leak.py`, `p37_liuice_maf_dose.py`, `p60_bench_and_target_checks.py` | Section 7 |
+| Engine-bench emission signature | `p45_bench_ci.py`, `diagnostics/p47_bench_conditions.py` | Appendix G, Table 15 |
+| Signature contrast on real vehicles and robustness | `p48_signature_contrast_real.py`, `p54_kinematic_link_checks.py`, `p64_axis_r2_panel.py`, `p25_eq2_reconcile.py`, `p40_fuelcut_bias.py` | Section 8.1, Table 5, Figure 3, Appendix C |
+| Detection and feature-relevance baselines | `p7_baselines.py`, `p33_attribution_baselines.py` | Section 8.2, Appendix I, Table 16 |
+| Injected ground truth, operating points, misspecified injections | `p17_attribution_fixed.py`, `p20`-`p24`, `p36_revision_checks.py`, `p39_trip_effect_size.py`, `p52_misspecified_injection.py`, `p57_real_shaped_injection.py`, `p59_physical_perturbation.py` | Sections 4.6, 8.3, Table 6, Figure 4, Appendix B |
+| Four-condition test, simple rules, ablation, abstention audit | `p58_factorial_and_baselines.py`, `p35_ablation_runtime.py`, `p19_conformal.py` | Sections 8.3, 8.4, Tables 7 to 9, Appendix I, Table 17 |
+| Exploratory vehicle-level check | `p65_vehicle_level_control.py`, `p67_vehicle_guarantee_robustness.py` | Appendix I, Table 18 |
+| Fixed-car replications and outputs without an injected cause | `p29_hcrl.py`, `p31_sonata.py`, `p32_trim_echo.py`, `p34_false_fault_rate.py`, `p68_fleet_outputs_and_roc.py` | Section 8.5, Table 10 |
+| Seasonal drift, rolling reference, change detectors | `p26_seasonal_zero.py`, `p49_rolling_onset.py`, `p55_change_detectors.py`, `p61_history_and_drivers.py` | Section 8.6, Appendices E and F, Tables 13 and 14 |
+| Vehicle-level alarm policy (200 splits, matched false-alarm rate) | `p69_vehicle_alarm_policy.py` | Section 8.6, Table 11 |
+| Road car, cold start, bank divergence | `p41_opel_panel.py`, `p28_coldstart.py`, `p38_bank_divergence.py` | Section 8.6, Appendices D and E |
 | Figures | `make_figures.py`, `fig_overview.py`, `fig_reanchor.py`, `fig_attribution_corrected.py`, `fig7.py`, `fig_*.py` | Figures 1 to 9 |
 
-`attrib_setup.py` builds the shared frozen driving signature and the VED injection panel used by several scripts. The fault magnitude (3.49 percentage points of fuel per measured air, the smallest LiU-ICE fueling fault) is set where each script defines `S_fault`.
+`attrib_setup.py` builds the shared frozen kinematic signature and the VED injection panel used by several scripts. The fault magnitude (3.49 percentage points of fuel per measured air, the smallest LiU-ICE fueling fault) is set where each script defines `S_fault`.
 `diagnostics/` holds the diagnostic analyses cited in the text (fast-trim behaviour, baseline mechanism check).
 
 Each script states its pre-registered checks in its header and writes them, with pass or fail, into its JSON output.

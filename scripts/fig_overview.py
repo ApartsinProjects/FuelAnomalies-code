@@ -17,7 +17,7 @@ box(1,12,27,11,"Target fleet: VED",["136 cars, 11,304 trips","fuel from air flow
 box(1,-1,27,11,"Replications",["Kia, Sonata (fixed cars)","Opel fill-ups, Driving Events"],GREEN,"#eef5ee")
 box(38,30,26,12,"Kinematic axis",["acceleration, jerk,","harsh events (1 Hz speed)"],RED,"#fff")
 box(38,10,26,12,"Fuel-trim axis",["within-vehicle long-term trim","(bench: air-fuel ratio, CO, HC)"],BLUE,"#fff")
-box(73,15,26,22,"Attribution",["driver vs fueling fault","likelihood-ratio fusion","risk-controlled abstention","85% on injected trips"],GREEN,"#eef5ee")
+box(73,15,26,22,"Fault screen",["with driving-style indicator","likelihood-ratio fusion","risk-controlled abstention","vehicle-level alarm rule"],GREEN,"#eef5ee")
 arrow(28,43,37.5,37); arrow(28,30,37.5,17)
 arrow(28,17,37.5,33,"#999"); arrow(28,17,37.5,15,"#999")
 arrow(64,36,72.5,29); arrow(64,16,72.5,23)

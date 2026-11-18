@@ -1,7 +1,7 @@
 """P67: robustness of the vehicle-level guarantee of p65 part C (alpha 0.10, 102 calibration / 34 test vehicles,
 kinematic score referenced to the vehicle, 200 vehicle splits). Varied one at a time: the pre-set start of the fixed
-sequence (40%, 50%, 60%, 25% coverage), the level delta (0.1, 0.05, 0.025; 0.025 is a Bonferroni correction for the
-four configurations examined in p65), and a threshold grid fixed in advance in margin units (2.0 down to 0 in steps of
+sequence (40%, 50%, 60%, 25% coverage), the level delta (0.1, 0.05, 0.025; 0.025 corrects for the four part-C configurations of p65 and 0.0125 for all
+eight configurations tried in p65, parts A and C), and a threshold grid fixed in advance in margin units (2.0 down to 0 in steps of
 0.05) instead of quantiles of the calibration margins. Reported per configuration: splits with decisions, median
 coverage, median held-out selective error pooled over variants and averaged over vehicles (the test controls the
 vehicle-level ratio), and the share of splits whose pooled held-out error exceeds alpha.
@@ -28,7 +28,7 @@ def calibrate(conf, err, G, cal, alpha, delta, rng, start=None, numeric=None):
     return keep
 vehs = np.unique(grp); ALPHA = 0.10; R = {}
 CONF = [("start40", dict(start=0.4), 0.1), ("start50", dict(start=0.5), 0.1), ("start60", dict(start=0.6), 0.1), ("start25", dict(start=0.25), 0.1),
-        ("start50_delta0.05", dict(start=0.5), 0.05), ("start50_delta0.025", dict(start=0.5), 0.025),
+        ("start50_delta0.05", dict(start=0.5), 0.05), ("start50_delta0.025", dict(start=0.5), 0.025), ("start50_delta0.0125", dict(start=0.5), 0.0125),
         ("numeric_grid_2.0", dict(numeric=np.arange(2.0, -1e-9, -0.05)), 0.1), ("numeric_grid_2.0_delta0.025", dict(numeric=np.arange(2.0, -1e-9, -0.05)), 0.025)]
 for lvl, Sd in (("window", 0.65), ("trip", 1.3)):
     K2 = np.r_[kw0 + Sd / sc, kw0]; C2 = np.r_[cz0, cz0 + SF]; y2 = np.r_[np.zeros(n), np.ones(n)].astype(int); G2 = np.r_[grp, grp]

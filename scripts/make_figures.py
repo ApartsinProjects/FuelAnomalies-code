@@ -39,7 +39,7 @@ for lab,val,col in parts:
 ax.set_xlim(0,1); ax.set_ylim(-.5,.9); ax.set_yticks([]); ax.set_xlabel("share of trip fuel variance (R²)")
 ax.set_title("Variance decomposition of trip fuel (VED, 194 vehicles, 14,170 trips)")
 ax.legend([plt.Rectangle((0,0),1,1,color=c) for _,_,c in parts],[p[0] for p in parts],
-          ncol=2,fontsize=8.5,loc="upper center",bbox_to_anchor=(0.5,-0.55),frameon=False)
+          ncol=2,fontsize=8.5,loc="upper center",bbox_to_anchor=(0.5,-0.95),frameon=False)
 for s in ["top","right","left"]: ax.spines[s].set_visible(False)
 save(fig,"fig1_variance_decomposition")
 
